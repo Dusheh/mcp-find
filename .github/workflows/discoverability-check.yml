@@ -12,6 +12,7 @@ permissions:
 jobs:
   tag-check:
     # Only run when Vercel marks a Production deployment as successful.
+    # NOTE: 'Production' is case-sensitive — must match Vercel's exact deployment_status event payload string.
     if: >
       github.event.deployment_status.state == 'success' &&
       github.event.deployment_status.environment == 'Production'
@@ -26,7 +27,7 @@ jobs:
       # ── Homepage ──────────────────────────────────────────────────────────
       - name: Fetch homepage HTML
         run: |
-          curl -sf --retry 3 --retry-delay 5 \
+          curl -sf --retry 5 --retry-delay 30 \
             -A "Mozilla/5.0 (CI discoverability-check)" \
             -o /tmp/homepage.html \
             https://mcpfind.org/
@@ -57,9 +58,10 @@ jobs:
       # ── Representative blog page ──────────────────────────────────────────
       # Using the most recently added blog post as a representative page.
       # This slug was the last MDX added (2026-05-13 batch).
+      # Maintenance obligation: if this blog post is renamed/deleted, update this URL. Dynamic slug derivation deferred to follow-up.
       - name: Fetch representative blog page HTML
         run: |
-          curl -sf --retry 3 --retry-delay 5 \
+          curl -sf --retry 5 --retry-delay 30 \
             -A "Mozilla/5.0 (CI discoverability-check)" \
             -o /tmp/blog.html \
             https://mcpfind.org/blog/github-mcp-server-claude-code-tutorial
