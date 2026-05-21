@@ -2,7 +2,7 @@
 
 import { useState, useRef, type FormEvent } from "react";
 import { IconBrandGithub, IconArrowUpRight } from "@tabler/icons-react";
-import { CATEGORIES, CATEGORY_LABELS } from "@mcpfind/shared";
+import { CATEGORIES, CATEGORY_LABELS, type Category } from "@mcpfind/shared";
 import {
   type FormFields,
   type FormErrors,
@@ -36,7 +36,7 @@ export function SubmitForm() {
   const [fallbackUrl, setFallbackUrl] = useState<string | null>(null);
   // Success state: shown after window.open succeeds
   const [success, setSuccess] = useState(false);
-  // Fix 1: synchronous double-submit guard
+  // Defensive in-flight lock — currently no-op (handleSubmit is sync) but prevents double-fire if async I/O is added later.
   const submitting = useRef(false);
   // Fix 4: focus restore after reset
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -223,7 +223,7 @@ export function SubmitForm() {
         <p
           id="sf-package_name-err"
           aria-live="polite"
-          className="mt-1 text-xs text-red-400 min-h-[1.25rem]"
+          className="mt-1.5 text-xs text-red-400 min-h-[1.25rem]"
         >
           {touched.has("package_name") && errors.package_name ? errors.package_name : ""}
         </p>
@@ -257,7 +257,7 @@ export function SubmitForm() {
         <p
           id="sf-description-err"
           aria-live="polite"
-          className="mt-1 text-xs text-red-400 min-h-[1.25rem]"
+          className="mt-1.5 text-xs text-red-400 min-h-[1.25rem]"
         >
           {touched.has("description") && errors.description ? errors.description : ""}
         </p>
@@ -299,7 +299,7 @@ export function SubmitForm() {
           onChange={(e) => {
             const v = e.target.value;
             if (v === "" || isCategory(v)) {
-              setField("category", v === "" ? "" : v);
+              setField("category", v as Category | "");
             }
           }}
           onBlur={(e) => handleBlur("category", e.target.value)}
