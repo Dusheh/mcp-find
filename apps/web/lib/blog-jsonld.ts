@@ -2,6 +2,25 @@ import { SITE_URL } from '@mcpfind/shared';
 import type { BlogPost } from '@/types/blog';
 import { stripMdx } from './blog';
 
+// Fix 1 + Fix 3: strict ISO 8601 duration — (?=\d) after T rejects bare "PT"
+const ISO_8601_DURATION =
+  /^P(?!$)(?:\d+Y)?(?:\d+M)?(?:\d+W)?(?:\d+D)?(?:T(?=\d)(?:\d+H)?(?:\d+M)?(?:\d+S)?)?$/;
+
+// Fix 4: typed HowTo node
+interface HowToNode {
+  '@type': 'HowTo';
+  '@id': string;
+  name: string;
+  description: string;
+  url: string;
+  step: Array<{
+    '@type': 'HowToStep';
+    name: string;
+    text: string;
+  }>;
+  totalTime?: string;
+}
+
 function buildOrganizationNode() {
   return {
     '@type': 'Organization' as const,
@@ -90,22 +109,22 @@ export function generateBlogPostJsonLd(post: BlogPost): object {
     });
   }
 
-  // Add HowTo when howToSteps present
-  const ISO_8601_DURATION = /^P(?!$)(?:\d+Y)?(?:\d+M)?(?:\d+W)?(?:\d+D)?(?:T(?:\d+H)?(?:\d+M)?(?:\d+S)?)?$/;
-  if (post.frontmatter.howToSteps && post.frontmatter.howToSteps.length > 0) {
-    const howToNode: Record<string, unknown> = {
+  // Add HowTo when howToSteps present — Fix 2: filter first, gate node on result
+  const filteredSteps = (post.frontmatter.howToSteps ?? []).filter(
+    (s) => s.name?.trim() && s.text?.trim()
+  );
+  if (filteredSteps.length > 0) {
+    const howToNode: HowToNode = {
       '@type': 'HowTo',
       '@id': `${SITE_URL}/blog/${post.slug}#howto`,
       url: `${SITE_URL}/blog/${post.slug}`,
       name: post.frontmatter.howToName || post.frontmatter.title,
       description: post.frontmatter.howToDescription || post.frontmatter.description,
-      step: post.frontmatter.howToSteps
-        .filter(s => s.name?.trim() && s.text?.trim())
-        .map(step => ({
-          '@type': 'HowToStep',
-          name: step.name,
-          text: step.text,
-        })),
+      step: filteredSteps.map((step) => ({
+        '@type': 'HowToStep',
+        name: step.name,
+        text: step.text,
+      })),
     };
     if (post.frontmatter.howToTotalTime && ISO_8601_DURATION.test(post.frontmatter.howToTotalTime)) {
       howToNode.totalTime = post.frontmatter.howToTotalTime;
