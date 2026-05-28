@@ -236,3 +236,40 @@ describe("graceful no-op when gtag absent", () => {
     }).not.toThrow();
   });
 });
+
+// ---------------------------------------------------------------------------
+// guardPii — production sanitizer regression test
+// Verifies that PII values are scrubbed from console.error output in prod,
+// and never leak the raw email into logs.
+// ---------------------------------------------------------------------------
+
+describe("guardPii — production sanitizer", () => {
+  it("sanitizes PII values from prod console.error output", () => {
+    const consoleErrorSpy = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+    // Switch to production so guardPii logs instead of throws
+    vi.stubEnv("NODE_ENV", "production");
+
+    // trackServerOutboundClick passes the payload through guardPii → assertNoPii.
+    // Injecting an email-shaped value on a non-PII key triggers PII_VALUE_PATTERN.
+    // In prod, this is caught and sanitized before logging — must NOT throw.
+    expect(() =>
+      trackServerOutboundClick({
+        server_slug: "leakuser@example.com",
+        destination_host: "github.com",
+      })
+    ).not.toThrow();
+
+    // console.error must have been called (violation was detected and logged)
+    expect(consoleErrorSpy).toHaveBeenCalled();
+    const loggedMessage = String(consoleErrorSpy.mock.calls[0]?.[0] ?? "");
+    // The raw email must NOT appear in the log output
+    expect(loggedMessage).not.toContain("leakuser@example.com");
+    expect(loggedMessage).not.toContain("@example.com");
+
+    // Restore
+    vi.unstubAllEnvs();
+    consoleErrorSpy.mockRestore();
+  });
+});

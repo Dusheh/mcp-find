@@ -66,7 +66,7 @@ if (typeof expectedBroken !== 'number' || typeof expectedTotal !== 'number') {
 // --- Count current BROKEN entries ---
 // MUST stay in sync with QUALITY_STATUS_VALUES in packages/shared/src/types.ts (F7 — drift defense).
 // Cannot import the TS constant directly from this .mjs script; sync enforced by code review + comment.
-const VALID_STATUSES = new Set(['HEALTHY', 'STALE', 'BROKEN', 'LOW-CREDIBILITY']);
+export const VALID_STATUSES = new Set(['HEALTHY', 'STALE', 'BROKEN', 'LOW-CREDIBILITY']);
 let currentBroken = 0;
 let currentTotal = 0;
 const invalidEntries = [];

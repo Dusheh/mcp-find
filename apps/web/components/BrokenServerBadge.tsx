@@ -73,7 +73,7 @@ export function BrokenServerBadge({ qualityStatus, className }: BrokenServerBadg
             // Respect reduced-motion preference via Tailwind (no transform animation)
             "motion-safe:animate-in motion-safe:fade-in motion-safe:duration-100"
           )}
-          style={{ top: "100%", left: 0, position: "absolute" }}
+          style={{ top: "100%", left: 0 }}
         >
           {/* Plain text content — never dangerouslySetInnerHTML */}
           {TOOLTIP_TEXT}

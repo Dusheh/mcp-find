@@ -17,6 +17,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { tmpdir } from "node:os";
 import { QUALITY_STATUS_VALUES } from "../../packages/shared/dist/types.js";
+import { VALID_STATUSES as SCRIPT_VALID_STATUSES } from "../check-broken-delta.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -49,8 +50,8 @@ function runScript(mapPath, snapshotPath) {
 // ---------------------------------------------------------------------------
 
 describe("VALID_STATUSES drift defense", () => {
-  // The script's hardcoded set — extracted here to mirror script/check-broken-delta.mjs line 69.
-  const SCRIPT_VALID_STATUSES = new Set(["HEALTHY", "STALE", "BROKEN", "LOW-CREDIBILITY"]);
+  // SCRIPT_VALID_STATUSES is now imported directly from check-broken-delta.mjs above.
+  // If the script's set changes, this test will automatically catch it — no manual sync needed.
 
   it("script VALID_STATUSES has the same count as QUALITY_STATUS_VALUES", () => {
     expect(SCRIPT_VALID_STATUSES.size).toBe(QUALITY_STATUS_VALUES.length);
