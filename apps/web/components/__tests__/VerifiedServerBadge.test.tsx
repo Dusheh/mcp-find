@@ -13,7 +13,7 @@
 import { describe, it, expect } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import { VerifiedServerBadge } from "../VerifiedServerBadge";
+import { VerifiedServerBadge, TOOLTIP_TEXT as COMPONENT_TOOLTIP_TEXT } from "../VerifiedServerBadge";
 import { StaleServerBadge } from "../StaleServerBadge";
 import type { QualityStatus } from "@mcpfind/shared";
 
@@ -111,13 +111,14 @@ describe("VerifiedServerBadge — all non-HEALTHY statuses are hidden", () => {
 // Real DOM render tests — XSS defense and WCAG id uniqueness
 // ---------------------------------------------------------------------------
 
-const TOOLTIP_TEXT =
-  "Verified active: maintained within the last 12 months, has GitHub stars, and a documented README.";
+// Use the exported constant from the component — avoids duplicating the string
+// and ensures the test breaks if the component text changes.
+const TOOLTIP_TEXT = COMPONENT_TOOLTIP_TEXT;
 
 describe("VerifiedServerBadge DOM render — XSS defense", () => {
   it("tooltip text matches TOOLTIP_TEXT constant exactly (no dynamic content)", () => {
     render(<VerifiedServerBadge qualityStatus="HEALTHY" />);
-    const button = screen.getByRole("button", { name: /verified active/i });
+    const button = screen.getByRole("button", { name: TOOLTIP_TEXT });
     fireEvent.mouseEnter(button);
     const tooltip = screen.getByRole("tooltip");
     expect(tooltip.textContent).toBe(TOOLTIP_TEXT);
@@ -125,7 +126,7 @@ describe("VerifiedServerBadge DOM render — XSS defense", () => {
 
   it("tooltip DOM contains no script tags or event handlers (XSS defense)", () => {
     const { container } = render(<VerifiedServerBadge qualityStatus="HEALTHY" />);
-    const button = screen.getByRole("button", { name: /verified active/i });
+    const button = screen.getByRole("button", { name: TOOLTIP_TEXT });
     fireEvent.mouseEnter(button);
     expect(container.innerHTML).not.toContain("<script");
     expect(container.innerHTML).not.toContain("onerror=");

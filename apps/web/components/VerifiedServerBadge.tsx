@@ -23,7 +23,7 @@ interface VerifiedServerBadgeProps {
   className?: string;
 }
 
-const TOOLTIP_TEXT =
+export const TOOLTIP_TEXT =
   "Verified active: maintained within the last 12 months, has GitHub stars, and a documented README.";
 
 export function VerifiedServerBadge({ qualityStatus, className }: VerifiedServerBadgeProps) {

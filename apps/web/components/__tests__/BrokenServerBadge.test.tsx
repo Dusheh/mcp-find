@@ -30,20 +30,6 @@ function shouldRenderBrokenBadge(qualityStatus: QualityStatus | undefined): bool
   return qualityStatus === "BROKEN";
 }
 
-/**
- * Simulates XSS safety of the badge.
- *
- * The badge renders text via React children only — never dangerouslySetInnerHTML.
- * Tooltip is a static constant, not derived from server.description.
- */
-function getTooltipContent(): string {
-  return "No recent commits or repository may be archived. Verify before adopting.";
-}
-
-function isSafeTextContent(content: string): boolean {
-  return !content.includes("<script") && !content.includes("onerror=") && !content.includes("javascript:");
-}
-
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -67,28 +53,6 @@ describe("BrokenServerBadge render condition", () => {
 
   it("is hidden for undefined (server not in manifest)", () => {
     expect(shouldRenderBrokenBadge(undefined)).toBe(false);
-  });
-});
-
-describe("BrokenServerBadge XSS safety", () => {
-  it("tooltip content is static text — no dynamic server data injected", () => {
-    const tooltip = getTooltipContent();
-    expect(tooltip).toContain("No recent commits");
-    expect(typeof tooltip).toBe("string");
-  });
-
-  it("tooltip content contains no executable HTML", () => {
-    const tooltip = getTooltipContent();
-    expect(isSafeTextContent(tooltip)).toBe(true);
-  });
-
-  it("XSS attempt via malicious description does not reach badge tooltip", () => {
-    const maliciousDescription = '<img src=x onerror=alert(1)><script>alert("xss")</script>';
-    const tooltip = getTooltipContent();
-    expect(tooltip).not.toContain(maliciousDescription);
-    expect(tooltip).not.toContain("<script");
-    expect(tooltip).not.toContain("onerror");
-    expect(isSafeTextContent(tooltip)).toBe(true);
   });
 });
 
